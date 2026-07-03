@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GymSaaS Portal</title>
+    <script>
+      // Array to hold diagnostic logs
+      var logs = [];
+      
+      function addDiagnosticLog(type, msg, extra) {
+        logs.push({ type: type, message: msg, extra: extra });
+        updateDiagnosticPanel();
+      }
+
+      // 1. Capture-phase resource/network load errors (like 404 script files)
+      window.addEventListener('error', function(event) {
+        if (event.target && (event.target.src || event.target.href)) {
+          addDiagnosticLog('Resource Error', 'Failed to load: ' + (event.target.src || event.target.href), 'Tag: ' + event.target.tagName);
+        } else {
+          addDiagnosticLog('Runtime Error', event.message || event.error, (event.filename ? event.filename + ':' + event.lineno : ''));
+        }
+      }, true);
+
+      // 2. Unhandled Promise Rejections
+      window.addEventListener('unhandledrejection', function(event) {
+        addDiagnosticLog('Unhandled Rejection', String(event.reason), event.reason && event.reason.stack);
+      });
+
+      // 3. Intercept console.error and console.warn
+      var originalConsoleError = console.error;
+      console.error = function() {
+        var args = Array.prototype.slice.call(arguments);
+        originalConsoleError.apply(console, args);
+        addDiagnosticLog('Console Error', args.map(function(a) { return typeof a === 'object' ? JSON.stringify(a) : String(a); }).join(' '), '');
+      };
+
+      var originalConsoleWarn = console.warn;
+      console.warn = function() {
+        var args = Array.prototype.slice.call(arguments);
+        originalConsoleWarn.apply(console, args);
+        addDiagnosticLog('Console Warning', args.map(function(a) { return typeof a === 'object' ? JSON.stringify(a) : String(a); }).join(' '), '');
+      };
+
+      function updateDiagnosticPanel() {
+        var panel = document.getElementById('diagnostic-console');
+        if (!panel) {
+          panel = document.createElement('div');
+          panel.id = 'diagnostic-console';
+          panel.style.position = 'fixed';
+          panel.style.bottom = '10px';
+          panel.style.left = '10px';
+          panel.style.right = '10px';
+          panel.style.maxHeight = '200px';
+          panel.style.backgroundColor = '#020617';
+          panel.style.color = '#38bdf8';
+          panel.style.padding = '12px';
+          panel.style.fontFamily = 'monospace';
+          panel.style.fontSize = '11px';
+          panel.style.lineHeight = '1.4';
+          panel.style.borderRadius = '8px';
+          panel.style.border = '1px solid #1e293b';
+          panel.style.zIndex = '999999';
+          panel.style.overflow = 'auto';
+          panel.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.5)';
+          document.body.appendChild(panel);
+        }
+        
+        var html = '<div style="font-weight:bold; border-bottom:1px solid #1e293b; padding-bottom:4px; margin-bottom:6px; display:flex; justify-content:between; align-items:center;"><span>🔍 System Diagnostic Console Logs (' + logs.length + ')</span> <button onclick="localStorage.clear(); window.location.reload();" style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:10px;">Reset LocalStorage & Reload</button></div>';
+        for (var i = logs.length - 1; i >= 0; i--) {
+          var log = logs[i];
+          var color = log.type.indexOf('Error') !== -1 ? '#fda4af' : (log.type.indexOf('Warning') !== -1 ? '#fde047' : '#38bdf8');
+          html += '<div style="margin-bottom: 4px; border-bottom: 1px solid #0f172a; padding-bottom: 2px;">';
+          html += '<span style="color:' + color + '; font-weight:bold;">[' + log.type + ']</span> ' + log.message;
+          if (log.extra) {
+            html += '<div style="color: #64748b; font-size: 10px; padding-left: 10px;">' + log.extra + '</div>';
+          }
+          html += '</div>';
+        }
+        panel.innerHTML = html;
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div style="background: #0f172a; color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: system-ui, sans-serif; padding: 20px; text-align: center; box-sizing: border-box; margin: 0;">
+        <div style="width: 50px; height: 50px; border: 4px solid #38bdf8; border-top-color: transparent; border-radius: 50%; animate: spin 1s linear infinite; margin-bottom: 20px;" class="diagnostic-spinner"></div>
+        <style>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          .diagnostic-spinner {
+            animation: spin 1s linear infinite;
+          }
+        </style>
+        <h1 style="color: #38bdf8; margin: 0; font-size: 24px;">Loading GymSaaS Portal...</h1>
+        <p style="color: #94a3b8; max-width: 450px; margin-top: 12px; font-size: 14px; line-height: 1.5;">
+          This screen should disappear in a few seconds as the application mounts. If it remains stuck or goes completely white, a script error might have occurred.
+        </p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
