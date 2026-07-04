@@ -131,7 +131,7 @@ export default function DashboardLayout({
             : 'text-amber-500');
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] font-sans text-slate-900 antialiased relative overflow-x-hidden">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#f8fafc] font-sans text-slate-900 antialiased relative overflow-x-hidden">
       
       {/* 1. PERSISTENT LEFT SIDEBAR - DESKTOP */}
       <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-100 z-30 shrink-0">
@@ -153,10 +153,10 @@ export default function DashboardLayout({
               Menu
             </span>
             {[
-              { label: 'Dashboard', icon: LayoutDashboard, page: 'member' as const, color: 'text-indigo-600' },
-              { label: 'Community', icon: MessageSquare, page: 'trainer' as const, color: 'text-emerald-500' },
-              { label: 'Analytic', icon: TrendingUp, page: 'gym_admin' as const, color: 'text-indigo-600' },
-              { label: 'Members', icon: Users, page: 'super_admin' as const, color: 'text-rose-500' },
+              { label: 'Member Portal (/)', icon: LayoutDashboard, page: 'member' as const, color: 'text-indigo-600' },
+              { label: 'Trainer Dashboard (/trainer)', icon: UserCheck, page: 'trainer' as const, color: 'text-emerald-500' },
+              { label: 'Gym Owner Admin (/admin)', icon: Briefcase, page: 'gym_admin' as const, color: 'text-indigo-600' },
+              { label: 'Pro Platform Admin (/proadmin)', icon: Shield, page: 'super_admin' as const, color: 'text-rose-500' },
             ].map((item) => {
               const Icon = item.icon;
               const isActive = activePage === item.page;
@@ -480,10 +480,10 @@ export default function DashboardLayout({
                       Menu
                     </span>
                     {[
-                      { label: 'Dashboard', icon: LayoutDashboard, page: 'member' as const },
-                      { label: 'Community', icon: MessageSquare, page: 'trainer' as const },
-                      { label: 'Analytic', icon: TrendingUp, page: 'gym_admin' as const },
-                      { label: 'Members', icon: Users, page: 'super_admin' as const },
+                      { label: 'Member Portal (/)', icon: LayoutDashboard, page: 'member' as const },
+                      { label: 'Trainer Dashboard (/trainer)', icon: UserCheck, page: 'trainer' as const },
+                      { label: 'Gym Owner Admin (/admin)', icon: Briefcase, page: 'gym_admin' as const },
+                      { label: 'Pro Platform Admin (/proadmin)', icon: Shield, page: 'super_admin' as const },
                     ].map((item) => {
                       const Icon = item.icon;
                       const isActive = activePage === item.page;

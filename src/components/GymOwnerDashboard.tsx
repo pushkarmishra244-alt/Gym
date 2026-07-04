@@ -60,7 +60,13 @@ export default function GymOwnerDashboard({
   onLogsUpdate,
   currentUser
 }: GymOwnerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'members' | 'trainers' | 'classes' | 'plans'>('members');
+  const [activeTab, setActiveTab] = useState<'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics'>('members');
+
+  // Interactive Financial Simulator Mock States
+  const [simMembersCount, setSimMembersCount] = useState(150);
+  const [simMonthlyFee, setSimMonthlyFee] = useState(59);
+  const [simTrainerCount, setSimTrainerCount] = useState(4);
+  const [simOperatingCost, setSimOperatingCost] = useState(1200);
 
   // Search States
   const [searchQuery, setSearchQuery] = useState('');
@@ -353,7 +359,7 @@ export default function GymOwnerDashboard({
         </div>
 
         {/* Tenant Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 p-1 rounded-lg text-xs font-semibold shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 border border-slate-200 p-1 rounded-lg text-xs font-semibold shrink-0">
           <button 
             onClick={() => { setActiveTab('members'); setSearchQuery(''); }}
             className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'members' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
@@ -377,6 +383,12 @@ export default function GymOwnerDashboard({
             className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'plans' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
           >
             Pricing Tiers ({gymMembershipPlans.length})
+          </button>
+          <button 
+            onClick={() => { setActiveTab('gym_analytics'); setSearchQuery(''); }}
+            className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'gym_analytics' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Gym Analytics &amp; Goals
           </button>
         </div>
       </div>
@@ -898,6 +910,211 @@ export default function GymOwnerDashboard({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Gym Analytics & Goals */}
+      {activeTab === 'gym_analytics' && (
+        <div className="space-y-6">
+          {/* Interactive Financial bottom-line simulator */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-50 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 tracking-tight mb-1 font-display">Target Revenue Profit Simulator</h3>
+                <p className="text-xs text-slate-400 font-medium">Simulate membership expansion targets, pricing adjustments, and operational overheads dynamically.</p>
+              </div>
+              <div className="bg-indigo-50/60 border border-indigo-100/50 px-4 py-3 rounded-xl text-right shrink-0">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-indigo-500 block font-mono">Simulated Net Profit</span>
+                <span className={`text-xl font-extrabold font-mono ${((simMembersCount * simMonthlyFee) - (simTrainerCount * 2500) - simOperatingCost) >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>
+                  ${((simMembersCount * simMonthlyFee) - (simTrainerCount * 2500) - simOperatingCost).toLocaleString()}/mo
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Sliders */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span>Target Members</span>
+                  <span className="text-indigo-600 font-bold font-mono">{simMembersCount} Members</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="30" 
+                  max="400" 
+                  value={simMembersCount} 
+                  onChange={(e) => setSimMembersCount(Number(e.target.value))}
+                  className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                />
+                <span className="text-[10px] text-slate-400 block font-mono">Min: 30 • Max: 400</span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span>Average Monthly Fee</span>
+                  <span className="text-indigo-600 font-bold font-mono">${simMonthlyFee}/mo</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="20" 
+                  max="199" 
+                  value={simMonthlyFee} 
+                  onChange={(e) => setSimMonthlyFee(Number(e.target.value))}
+                  className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                />
+                <span className="text-[10px] text-slate-400 block font-mono">Min: $20 • Max: $199</span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span>Active Trainers payroll</span>
+                  <span className="text-indigo-600 font-bold font-mono">{simTrainerCount} Coach(es)</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="8" 
+                  value={simTrainerCount} 
+                  onChange={(e) => setSimTrainerCount(Number(e.target.value))}
+                  className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                />
+                <span className="text-[10px] text-slate-400 block font-mono">Avg Salary: $2,500/mo each</span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span>Operating Costs</span>
+                  <span className="text-indigo-600 font-bold font-mono">${simOperatingCost}/mo</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="500" 
+                  max="5000" 
+                  step="100"
+                  value={simOperatingCost} 
+                  onChange={(e) => setSimOperatingCost(Number(e.target.value))}
+                  className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                />
+                <span className="text-[10px] text-slate-400 block font-mono">Rent, power, SaaS platform fees</span>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-center">
+              <div className="p-3 bg-slate-50/50 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block font-mono">Simulated Gross Income</span>
+                <span className="text-base font-extrabold text-slate-800 font-mono">${(simMembersCount * simMonthlyFee).toLocaleString()}/mo</span>
+              </div>
+              <div className="p-3 bg-slate-50/50 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block font-mono">Trainer Payroll Cost</span>
+                <span className="text-base font-extrabold text-rose-600 font-mono">${(simTrainerCount * 2500).toLocaleString()}/mo</span>
+              </div>
+              <div className="p-3 bg-slate-50/50 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block font-mono">Fixed Overheads</span>
+                <span className="text-base font-extrabold text-slate-800 font-mono">${simOperatingCost.toLocaleString()}/mo</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Elegant SVG Check-ins & Attendance density line chart */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-bold text-slate-800 font-display">6-Month Attendance Density &amp; Peak Hours</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">Daily swipe density trends indicating facility load capacity levels</p>
+                </div>
+                <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded-md font-semibold font-mono">
+                  +18.4% Peak Load Increase
+                </span>
+              </div>
+
+              {/* Handcrafted Beautiful SVG Area/Path Chart */}
+              <div className="h-56 w-full flex flex-col justify-between pt-4 select-none">
+                <div className="flex-1 flex items-end justify-between px-1 relative h-[160px] border-b border-slate-100">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                  </div>
+
+                  {[
+                    { month: 'Jan', checks: 450, peakHours: '06:00 PM' },
+                    { month: 'Feb', checks: 520, peakHours: '06:30 PM' },
+                    { month: 'Mar', checks: 680, peakHours: '07:00 PM' },
+                    { month: 'Apr', checks: 620, peakHours: '06:00 PM' },
+                    { month: 'May', checks: 790, peakHours: '05:30 PM' },
+                    { month: 'Jun', checks: 910, peakHours: '06:30 PM' }
+                  ].map((item, index) => {
+                    const maxChecks = 1000;
+                    const heightPercent = Math.max(15, (item.checks / maxChecks) * 100);
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center group relative z-10 h-full justify-end">
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-30 animate-fade-in whitespace-nowrap">
+                          <div className="bg-slate-900 text-white p-2.5 rounded-lg text-[10px] font-bold shadow-md border border-slate-800 text-left">
+                            <p className="font-bold text-slate-300">{item.month} Logs</p>
+                            <p className="text-indigo-400 font-mono">Total Swipes: {item.checks} visits</p>
+                            <p className="text-amber-400">Peak Hour: {item.peakHours}</p>
+                          </div>
+                          <div className="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-slate-800"></div>
+                        </div>
+
+                        {/* Visual Pill/Bar Representing Daily visits */}
+                        <div 
+                          style={{ height: `${heightPercent}%` }}
+                          className="w-12 bg-gradient-to-t from-indigo-50 to-indigo-500/10 group-hover:from-indigo-100 group-hover:to-indigo-500/20 transition-all rounded-t-lg relative border-t border-indigo-200"
+                        >
+                          {/* Anchor Circle Indicator */}
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-600 border border-white group-hover:scale-125 transition-transform"></div>
+                        </div>
+
+                        {/* Label */}
+                        <span className="text-[10px] font-bold text-slate-400 mt-2 font-mono">{item.month}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Class distribution progress lists */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 font-display mb-1">Class Enrollment Split</h3>
+                <p className="text-[10px] text-slate-400 font-medium mb-4">Percentage of members registered per class type</p>
+
+                <div className="space-y-4 pt-2">
+                  {[
+                    { name: 'Strength &amp; Barbell Conditioning', percent: 45, color: 'bg-indigo-600' },
+                    { name: 'CrossFit &amp; High Intensity HIIT', percent: 30, color: 'bg-emerald-500' },
+                    { name: 'Vinyasa Flow Yoga &amp; Pilates', percent: 15, color: 'bg-amber-500' },
+                    { name: 'Spinning &amp; Cardio Endurance', percent: 10, color: 'bg-sky-500' }
+                  ].map((cls, index) => (
+                    <div key={index} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-slate-700" dangerouslySetInnerHTML={{ __html: cls.name }}></span>
+                        <span className="text-slate-500 font-mono">{cls.percent}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div className={`h-full ${cls.color} rounded-full`} style={{ width: `${cls.percent}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-slate-50 pt-4">
+                <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100/40 flex items-start gap-2.5">
+                  <span className="p-1 bg-amber-500 text-white rounded text-[10px] font-bold font-mono shrink-0">DATA</span>
+                  <p className="text-[10px] text-amber-700 leading-normal">
+                    <strong>Barbell classes</strong> remain highly filled. Adjust trainer allocations to HIIT and yoga slots to balanced weekly load.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

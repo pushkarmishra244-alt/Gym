@@ -39,7 +39,22 @@ export default function SuperAdminDashboard({
   onLogsUpdate,
   currentUser
 }: SuperAdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'gyms' | 'plans' | 'logs'>('gyms');
+  const [activeTab, setActiveTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');
+
+  // SaaS Features Toggle States
+  const [featureFlags, setFeatureFlags] = useState({
+    aiCoach: true,
+    autoBilling: true,
+    sandboxMode: false,
+    advancedSecurity: false
+  });
+
+  const handleToggleFlag = (key: keyof typeof featureFlags, name: string) => {
+    const nextVal = !featureFlags[key];
+    setFeatureFlags(prev => ({ ...prev, [key]: nextVal }));
+    db.addLog('SECURITY', `Super Admin toggled global feature flag: "${name}" to ${nextVal ? 'ENABLED' : 'DISABLED'}`, currentUser.name);
+    onLogsUpdate(db.logs);
+  };
   
   // Gym Management State
   const [showAddGym, setShowAddGym] = useState(false);
@@ -203,6 +218,12 @@ export default function SuperAdminDashboard({
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'logs' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}
           >
             SaaS Audit Logs
+          </button>
+          <button 
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${activeTab === 'analytics' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}
+          >
+            SaaS Analytics &amp; Flags
           </button>
         </div>
       </div>
@@ -675,6 +696,216 @@ export default function SuperAdminDashboard({
                   No system logs found matching the selected filters.
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: SaaS Analytics & Global Feature Flags */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          {/* Interactive Feature Flag Command Deck */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs">
+            <h3 className="text-base font-bold text-slate-800 tracking-tight mb-1 font-display">Global Feature Command Deck</h3>
+            <p className="text-xs text-slate-400 mb-6 font-medium">Dynamically enable or restrict SaaS microservices platform-wide. Toggling writes directly to system audit logs.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/40 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-800">Gemini AI Engine</span>
+                    <span className={`w-2 h-2 rounded-full ${featureFlags.aiCoach ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mb-4">Enables custom Gemini API workout &amp; diet planners across member and trainer clients.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFlag('aiCoach', 'Gemini AI Engine')}
+                  className={`w-full py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors text-center ${
+                    featureFlags.aiCoach 
+                      ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100' 
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                  }`}
+                >
+                  {featureFlags.aiCoach ? 'Disable Engine' : 'Enable Engine'}
+                </button>
+              </div>
+
+              <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/40 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-800">Automated Billing</span>
+                    <span className={`w-2 h-2 rounded-full ${featureFlags.autoBilling ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mb-4">Triggers dynamic alerts and auto-dispatches stripe billing links to expiring tenants.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFlag('autoBilling', 'Automated Billing')}
+                  className={`w-full py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors text-center ${
+                    featureFlags.autoBilling 
+                      ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100' 
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                  }`}
+                >
+                  {featureFlags.autoBilling ? 'Disable System' : 'Enable System'}
+                </button>
+              </div>
+
+              <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/40 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-800">SaaS Sandbox Mode</span>
+                    <span className={`w-2 h-2 rounded-full ${featureFlags.sandboxMode ? 'bg-indigo-500' : 'bg-slate-400'}`}></span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mb-4">Bypasses real billing checkouts and allows free onboarding simulations.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFlag('sandboxMode', 'SaaS Sandbox')}
+                  className={`w-full py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors text-center ${
+                    featureFlags.sandboxMode 
+                      ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100' 
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                  }`}
+                >
+                  {featureFlags.sandboxMode ? 'Disable Sandbox' : 'Enable Sandbox'}
+                </button>
+              </div>
+
+              <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/40 hover:bg-slate-50 transition-colors flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-800">Advanced Shield 2FA</span>
+                    <span className={`w-2 h-2 rounded-full ${featureFlags.advancedSecurity ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mb-4">Restricts multi-tenant administration logs behind active MFA authentication verification.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFlag('advancedSecurity', 'Advanced Shield 2FA')}
+                  className={`w-full py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors text-center ${
+                    featureFlags.advancedSecurity 
+                      ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100' 
+                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                  }`}
+                >
+                  {featureFlags.advancedSecurity ? 'Disable Shield' : 'Enable Shield'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Visual Registration & Revenue Trends SVG Chart */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-bold text-slate-800 font-display">Monthly SaaS Subscription MRR Growth</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">Consolidated registration MRR projections over the past six months</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1 text-[10px] text-indigo-600 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600"></span> Projections
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Active MRR
+                  </span>
+                </div>
+              </div>
+
+              {/* Handcrafted Highly Polished Responsive SVG Chart with hovering tooltips */}
+              <div className="h-64 w-full flex flex-col justify-between pt-4 select-none">
+                <div className="flex-1 flex items-end justify-between gap-4 px-1 relative h-[200px] border-b border-slate-100">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                  </div>
+                  
+                  {[
+                    { month: 'Jan 2026', revenue: 2400, projection: 2500, activeGyms: 3 },
+                    { month: 'Feb 2026', revenue: 3200, projection: 3500, activeGyms: 4 },
+                    { month: 'Mar 2026', revenue: 4500, projection: 4800, activeGyms: 6 },
+                    { month: 'Apr 2026', revenue: 5800, projection: 6000, activeGyms: 7 },
+                    { month: 'May 2026', revenue: 6400, projection: 7000, activeGyms: 8 },
+                    { month: 'Jun 2026', revenue: 7900, projection: 8500, activeGyms: 10 }
+                  ].map((item, index) => {
+                    const maxRevenue = 9000;
+                    const heightPercent = Math.max(15, (item.revenue / maxRevenue) * 100);
+                    const projectionPercent = Math.max(15, (item.projection / maxRevenue) * 100);
+                    
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center group relative z-10 h-full justify-end">
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-30 animate-fade-in whitespace-nowrap">
+                          <div className="bg-slate-900 text-white p-3 rounded-lg text-[10px] font-bold shadow-md border border-slate-800 space-y-1 text-left">
+                            <p className="font-bold text-slate-300 border-b border-slate-800 pb-1 mb-1">{item.month}</p>
+                            <p className="text-emerald-400 font-mono">Active MRR: ${item.revenue}</p>
+                            <p className="text-indigo-400 font-mono">Projection: ${item.projection}</p>
+                            <p className="text-slate-400">Total Tenants: {item.activeGyms} Gyms</p>
+                          </div>
+                          <div className="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-slate-800"></div>
+                        </div>
+                        
+                        {/* Double Bar Display */}
+                        <div className="flex items-end gap-1.5 w-full max-w-[40px]">
+                          {/* Projection Bar */}
+                          <div 
+                            style={{ height: `${projectionPercent}%` }}
+                            className="w-1/2 bg-indigo-100 group-hover:bg-indigo-200 transition-all rounded-t duration-300"
+                          ></div>
+                          {/* Active Bar */}
+                          <div 
+                            style={{ height: `${heightPercent}%` }}
+                            className="w-1/2 bg-gradient-to-t from-emerald-500 to-emerald-400 group-hover:brightness-105 transition-all rounded-t shadow-sm duration-300"
+                          ></div>
+                        </div>
+                        
+                        {/* Month Label */}
+                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono whitespace-nowrap">{item.month}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Plan Distribution Weight Matrix */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 font-display mb-1">Market Share Distribution</h3>
+                <p className="text-[10px] text-slate-400 font-medium mb-4">SaaS subscription distribution amongst live tenant gyms</p>
+                
+                <div className="space-y-4 pt-2">
+                  {[
+                    { name: 'Basic Starter Tier', code: 'sub_basic', count: 4, share: 40, color: 'bg-indigo-500' },
+                    { name: 'Advanced Growth Tier', code: 'sub_growth', count: 4, share: 40, color: 'bg-emerald-500' },
+                    { name: 'Elite Enterprise Club', code: 'sub_enterprise', count: 2, share: 20, color: 'bg-amber-500' }
+                  ].map((tier, index) => (
+                    <div key={index} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-slate-700">{tier.name}</span>
+                        <span className="text-slate-500 font-mono">{tier.count} Gyms ({tier.share}%)</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div className={`h-full ${tier.color} rounded-full`} style={{ width: `${tier.share}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-slate-50 pt-4">
+                <div className="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100/40 flex items-start gap-3">
+                  <span className="p-1 bg-indigo-500 text-white rounded text-[10px] font-bold shrink-0 font-mono">TIP</span>
+                  <p className="text-[10px] text-indigo-700 leading-normal">
+                    Market-share weights indicates high adoption of <strong>Starter and Growth tiers</strong>. Promote the Elite Enterprise plan to maximize global SaaS platform average revenue per account (ARPU).
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

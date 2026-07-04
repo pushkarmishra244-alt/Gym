@@ -59,7 +59,7 @@ export default function TrainerDashboard({
   onLogsUpdate,
   currentUser
 }: TrainerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'clients' | 'attendance'>('clients');
+  const [activeTab, setActiveTab] = useState<'clients' | 'attendance' | 'trainer_analytics'>('clients');
 
   // Client Selection for plan edits
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -272,7 +272,7 @@ export default function TrainerDashboard({
         </div>
 
         {/* Navigation Selector */}
-        <div className="flex items-center gap-2 bg-slate-100/80 p-1 border border-slate-200 rounded-lg text-xs font-semibold shrink-0 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 bg-slate-100/80 p-1 border border-slate-200 rounded-lg text-xs font-semibold shrink-0 self-start md:self-auto">
           <button 
             onClick={() => setActiveTab('clients')}
             className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'clients' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
@@ -287,6 +287,12 @@ export default function TrainerDashboard({
             className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'attendance' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
           >
             Teach &amp; Attend registers ({myClasses.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('trainer_analytics')}
+            className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'trainer_analytics' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Client Progress &amp; Workload
           </button>
         </div>
       </div>
@@ -712,6 +718,239 @@ export default function TrainerDashboard({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Client Progress & Workload Analytics */}
+      {activeTab === 'trainer_analytics' && (
+        <div className="space-y-6">
+          {/* Interactive Weight 1-Rep Max (1RM) Target Generator */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs">
+            <h3 className="text-base font-bold text-slate-800 tracking-tight mb-1 font-display">Athletic Performance &amp; 1RM Calculator</h3>
+            <p className="text-xs text-slate-400 mb-6 font-medium">Select a client and estimate their 1-Rep Max (Epley Formula) to program their targeted strength percentage splits.</p>
+            
+            {(() => {
+              const [calcClient, setCalcClient] = React.useState(myClients[0]?.id || '');
+              const [calcWeight, setCalcWeight] = React.useState(80);
+              const [calcReps, setCalcReps] = React.useState(5);
+              const [calcEx, setCalcEx] = React.useState('Back Squat');
+
+              const selectedClientObj = myClients.find(c => c.id === calcClient);
+              const calculated1RM = Math.round(calcWeight * (1 + calcReps / 30));
+
+              return (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left Controls */}
+                  <div className="space-y-4 bg-slate-50/40 border border-slate-100 p-4 rounded-xl">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Target Client</label>
+                      <select 
+                        value={calcClient}
+                        onChange={(e) => setCalcClient(e.target.value)}
+                        className="w-full bg-white border border-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-700"
+                      >
+                        {myClients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Target Exercise</label>
+                      <select 
+                        value={calcEx}
+                        onChange={(e) => setCalcEx(e.target.value)}
+                        className="w-full bg-white border border-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-700"
+                      >
+                        <option value="Back Squat">Barbell Back Squat</option>
+                        <option value="Deadlift">Conventional Deadlift</option>
+                        <option value="Bench Press">Flat Bench Press</option>
+                        <option value="Overhead Press">Military Overhead Press</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-semibold text-slate-700">
+                        <span>Working Weight</span>
+                        <span className="text-indigo-600 font-bold font-mono">{calcWeight} kg</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="20" 
+                        max="240" 
+                        value={calcWeight} 
+                        onChange={(e) => setCalcWeight(Number(e.target.value))}
+                        className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-semibold text-slate-700">
+                        <span>Repetitions (To Failure)</span>
+                        <span className="text-indigo-600 font-bold font-mono">{calcReps} reps</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="12" 
+                        value={calcReps} 
+                        onChange={(e) => setCalcReps(Number(e.target.value))}
+                        className="w-full accent-indigo-600 bg-slate-100 rounded-lg cursor-pointer h-1.5"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Middle Formula Display Card */}
+                  <div className="bg-indigo-600 text-white p-5 rounded-xl shadow-xs flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-indigo-500 rounded-full opacity-20 pointer-events-none"></div>
+                    
+                    <div className="space-y-1">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-200 font-mono">Performance Estimator</span>
+                      <h4 className="text-lg font-bold font-display leading-tight">{selectedClientObj?.name || 'Client'}'s Estimated Max</h4>
+                      <p className="text-[10px] text-indigo-100">Calculated using the Epley formula: 1RM = w(1 + r/30)</p>
+                    </div>
+
+                    <div className="my-4 text-center">
+                      <span className="text-4xl font-black font-mono block tracking-tight">{calculated1RM} kg</span>
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-200 font-mono mt-1 block">{calcEx} One-Rep Max</span>
+                    </div>
+
+                    <div className="bg-indigo-700/50 p-2.5 rounded-lg border border-indigo-500/20 text-[10px] leading-relaxed text-indigo-100">
+                      We recommend utilizing <strong>{Math.round(calculated1RM * 0.8)} kg</strong> (80% of 1RM) for a 4-6 rep strength stimulus, or <strong>{Math.round(calculated1RM * 0.7)} kg</strong> (70% of 1RM) for an 8-12 rep hypertrophy cycle.
+                    </div>
+                  </div>
+
+                  {/* Right Target Splits Matrix */}
+                  <div className="border border-slate-100 p-4 rounded-xl space-y-3.5 bg-slate-50/20">
+                    <h4 className="text-xs font-bold text-slate-800 tracking-tight font-display">Target Intensity Split Table</h4>
+                    <p className="text-[10px] text-slate-400">Apply these weights to {selectedClientObj?.name || 'client'}'s customized {calcEx} workout logs:</p>
+
+                    <div className="space-y-2">
+                      {[
+                        { percent: 95, label: 'Absolute Power / Neuro Stimulus', reps: '1-2 reps' },
+                        { percent: 85, label: 'Mechanical Tension / Strength', reps: '3-5 reps' },
+                        { percent: 75, label: 'Myofibrillar Hypertrophy', reps: '6-10 reps' },
+                        { percent: 65, label: 'Metabolic Stress / Local Endurance', reps: '12-15 reps' }
+                      ].map((split, i) => (
+                        <div key={i} className="flex items-center justify-between text-xs border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                          <div>
+                            <span className="font-bold text-slate-700 font-mono">{split.percent}% 1RM</span>
+                            <span className="text-[10px] text-slate-400 ml-2">({split.reps})</span>
+                            <p className="text-[10px] text-slate-400/90 leading-tight">{split.label}</p>
+                          </div>
+                          <span className="text-xs font-bold text-indigo-600 font-mono bg-indigo-50 px-2 py-0.5 rounded">
+                            {Math.round(calculated1RM * (split.percent / 100))} kg
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Elegant SVG Area Line-chart represent client average weekly training hours/intensity */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-bold text-slate-800 font-display">Weekly Client Activity Burn Ratios</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">Consolidated physical workout output volumes across all active coached accounts</p>
+                </div>
+                <span className="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-2.5 py-0.5 rounded-md font-semibold font-mono">
+                  Target: 180 total hours
+                </span>
+              </div>
+
+              {/* Handcrafted Beautiful SVG Area/Path Chart */}
+              <div className="h-56 w-full flex flex-col justify-between pt-4 select-none">
+                <div className="flex-1 flex items-end justify-between px-1 relative h-[160px] border-b border-slate-100">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                    <div className="w-full border-t border-slate-100 h-0"></div>
+                  </div>
+
+                  {[
+                    { week: 'Week 1', hours: 120, avgCal: 3400 },
+                    { week: 'Week 2', hours: 145, avgCal: 3800 },
+                    { week: 'Week 3', hours: 165, avgCal: 4200 },
+                    { week: 'Week 4', hours: 135, avgCal: 3900 },
+                    { week: 'Week 5', hours: 190, avgCal: 4800 },
+                    { week: 'Week 6', hours: 210, avgCal: 5300 }
+                  ].map((item, index) => {
+                    const maxHours = 240;
+                    const heightPercent = Math.max(15, (item.hours / maxHours) * 100);
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center group relative z-10 h-full justify-end">
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center pointer-events-none z-30 animate-fade-in whitespace-nowrap">
+                          <div className="bg-slate-900 text-white p-2.5 rounded-lg text-[10px] font-bold shadow-md border border-slate-800 text-left">
+                            <p className="font-bold text-slate-300">{item.week} Performance</p>
+                            <p className="text-indigo-400 font-mono">Coached Hours: {item.hours} hrs</p>
+                            <p className="text-emerald-400 font-mono">Avg Calories: {item.avgCal} kcal</p>
+                          </div>
+                          <div className="w-2 h-2 bg-slate-900 rotate-45 -mt-1 border-r border-b border-slate-800"></div>
+                        </div>
+
+                        {/* Visual Pill/Bar Representing hours */}
+                        <div 
+                          style={{ height: `${heightPercent}%` }}
+                          className="w-12 bg-gradient-to-t from-emerald-50 to-emerald-500/10 group-hover:from-emerald-100 group-hover:to-emerald-500/20 transition-all rounded-t-lg relative border-t border-emerald-200"
+                        >
+                          {/* Anchor Circle Indicator */}
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-600 border border-white group-hover:scale-125 transition-transform"></div>
+                        </div>
+
+                        {/* Label */}
+                        <span className="text-[10px] font-bold text-slate-400 mt-2 font-mono">{item.week}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Goal Completion Matrix progress lists */}
+            <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 font-display mb-1">Roster Goal Milestones</h3>
+                <p className="text-[10px] text-slate-400 font-medium mb-4">Milestone progress track for assigned athletes' transformation benchmarks</p>
+
+                <div className="space-y-4 pt-2">
+                  {[
+                    { name: 'Alex Jones (Muscle Growth)', percent: 80, status: 'Near Target' },
+                    { name: 'Marcus Brody (Body Fat %)', percent: 55, status: 'In Progress' },
+                    { name: 'Helen Hunt (Endurance/5k)', percent: 90, status: 'Almost Done' },
+                    { name: 'David Goggins (Ultra Conditioning)', percent: 100, status: 'Completed' }
+                  ].map((milestone, index) => (
+                    <div key={index} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span className="text-slate-700">{milestone.name}</span>
+                        <span className="text-indigo-600 font-mono">{milestone.percent}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${milestone.percent}%` }}></div>
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-400 font-mono block">{milestone.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-slate-50 pt-4">
+                <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/40 flex items-start gap-2.5">
+                  <span className="p-1 bg-indigo-500 text-white rounded text-[10px] font-bold font-mono shrink-0">DATA</span>
+                  <p className="text-[10px] text-indigo-700 leading-normal">
+                    Assigned athletes are logging <strong>high compliance ratings</strong>. Schedule active body comp reviews next Monday to calibrate diet targets.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -52,10 +52,11 @@ export default function App() {
       db.resetAll();
     }
 
+    const initialUsers = db.users.length > 0 ? db.users : loadedUsers;
     setGyms(db.gyms);
     setPlans(db.subscriptionPlans);
     setMembershipPlans(db.membershipPlans);
-    setUsers(db.users);
+    setUsers(initialUsers);
     setTrainers(db.trainers);
     setMembers(db.members);
     setClasses(db.classes);
@@ -66,18 +67,78 @@ export default function App() {
     setProgressHistory(db.progress);
     setLogs(db.logs);
 
-    // Default active user is Member Alex Jones so that main page is strictly for members
-    const defaultUser = db.users.find(u => u?.id === 'user_member_alex') || db.users.find(u => u?.role === 'MEMBER') || db.users[0] || {
-      id: 'user_member_alex',
-      email: 'alex.jones@gmail.com',
-      name: 'Alex Jones',
-      role: 'MEMBER',
-      gymId: 'gym_apex',
-      avatarUrl: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-      createdAt: '2026-02-01'
-    };
+    // Initial Path Matching to activePage
+    const path = window.location.pathname;
+    let initialPage: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass' = 'member';
+    if (path === '/admin') {
+      initialPage = 'gym_admin';
+    } else if (path === '/trainer') {
+      initialPage = 'trainer';
+    } else if (path === '/proadmin') {
+      initialPage = 'super_admin';
+    } else if (path === '/pass') {
+      initialPage = 'pass';
+    } else if (path === '/guide') {
+      initialPage = 'guide';
+    }
+    setActivePage(initialPage);
+
+    // Set correct active user on initial mount corresponding to the selected page
+    let defaultUser: User | null = null;
+    if (initialPage === 'gym_admin') {
+      defaultUser = initialUsers.find(u => u?.role === 'GYM_ADMIN') || null;
+    } else if (initialPage === 'trainer') {
+      defaultUser = initialUsers.find(u => u?.role === 'TRAINER') || null;
+    } else if (initialPage === 'super_admin') {
+      defaultUser = initialUsers.find(u => u?.role === 'SUPER_ADMIN') || null;
+    }
+    
+    if (!defaultUser) {
+      defaultUser = initialUsers.find(u => u?.id === 'user_member_alex') || initialUsers.find(u => u?.role === 'MEMBER') || initialUsers[0];
+    }
     setCurrentUser(defaultUser);
   }, []);
+
+  // Listen for browser popstate back/forward navigation
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      let targetPage: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass' = 'member';
+      if (path === '/admin') {
+        targetPage = 'gym_admin';
+      } else if (path === '/trainer') {
+        targetPage = 'trainer';
+      } else if (path === '/proadmin') {
+        targetPage = 'super_admin';
+      } else if (path === '/pass') {
+        targetPage = 'pass';
+      } else if (path === '/guide') {
+        targetPage = 'guide';
+      }
+      
+      setActivePage(targetPage);
+      
+      const allUsers = users.length > 0 ? users : db.users;
+      let targetUser: User | null = null;
+      if (targetPage === 'gym_admin') {
+        targetUser = allUsers.find(u => u?.role === 'GYM_ADMIN') || null;
+      } else if (targetPage === 'trainer') {
+        targetUser = allUsers.find(u => u?.role === 'TRAINER') || null;
+      } else if (targetPage === 'super_admin') {
+        targetUser = allUsers.find(u => u?.role === 'SUPER_ADMIN') || null;
+      }
+      
+      if (!targetUser) {
+        targetUser = allUsers.find(u => u?.id === 'user_member_alex') || allUsers.find(u => u?.role === 'MEMBER') || allUsers[0];
+      }
+      setCurrentUser(targetUser);
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, [users]);
 
   // Sync state functions that write both to state and to localStorage
   const handleGymsUpdate = (updatedGyms: Gym[]) => {
@@ -150,9 +211,22 @@ export default function App() {
     window.location.reload();
   };
 
-  // Safe sidebar page change handler that keeps currentUser in sync with active portal
+  // Safe sidebar page change handler that keeps currentUser in sync with active portal and updates URL
   const handlePageChange = (page: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass') => {
     setActivePage(page);
+    
+    // Update URL to match
+    let path = '/';
+    if (page === 'gym_admin') path = '/admin';
+    else if (page === 'trainer') path = '/trainer';
+    else if (page === 'super_admin') path = '/proadmin';
+    else if (page === 'pass') path = '/pass';
+    else if (page === 'guide') path = '/guide';
+    else if (page === 'member') path = '/';
+    
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path);
+    }
     
     if (page === 'member' || page === 'pass') {
       const u = users.find(x => x.id === 'user_member_alex') || users.find(x => x.role === 'MEMBER');
