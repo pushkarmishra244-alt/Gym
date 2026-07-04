@@ -147,3 +147,26 @@ export interface MemberProgress {
   bodyFat?: number;
   notes?: string;
 }
+
+export interface InvoiceItem {
+  description: string;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  memberId: string;
+  memberName: string;
+  gymId: string;
+  planName: string;
+  date: string;
+  dueDate: string;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  status: 'PAID' | 'UNPAID' | 'OVERDUE';
+  items: InvoiceItem[];
+}
+

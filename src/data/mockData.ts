@@ -11,7 +11,8 @@ import {
   WorkoutPlan, 
   NutritionPlan, 
   PlatformLog,
-  MemberProgress
+  MemberProgress,
+  Invoice
 } from '../types';
 
 // Standard Platform Subscription Plans
@@ -564,6 +565,65 @@ export const DEFAULT_PLATFORM_LOGS: PlatformLog[] = [
   }
 ];
 
+export const DEFAULT_INVOICES: Invoice[] = [
+  {
+    id: 'inv_1',
+    invoiceNumber: 'INV-1001',
+    memberId: 'user_member_alex',
+    memberName: 'Alex Jones',
+    gymId: 'gym_apex',
+    planName: 'Apex Unlimited Gold',
+    date: '2026-06-01',
+    dueDate: '2026-06-15',
+    subtotal: 99.00,
+    tax: 9.90,
+    discount: 0.00,
+    total: 108.90,
+    status: 'PAID',
+    items: [
+      { description: 'Apex Unlimited Gold Membership Fee', amount: 99.00 }
+    ]
+  },
+  {
+    id: 'inv_2',
+    invoiceNumber: 'INV-1002',
+    memberId: 'user_member_david',
+    memberName: 'David Smith',
+    gymId: 'gym_apex',
+    planName: 'Standard Pass',
+    date: '2026-06-15',
+    dueDate: '2026-06-30',
+    subtotal: 59.00,
+    tax: 5.90,
+    discount: 5.00,
+    total: 59.90,
+    status: 'PAID',
+    items: [
+      { description: 'Standard Pass Monthly Membership Fee', amount: 59.00 },
+      { description: 'Locker Rental Discount', amount: -5.00 }
+    ]
+  },
+  {
+    id: 'inv_3',
+    invoiceNumber: 'INV-1003',
+    memberId: 'user_member_emma',
+    memberName: 'Emma Watson',
+    gymId: 'gym_iron',
+    planName: 'Iron Warrior Pass',
+    date: '2026-07-01',
+    dueDate: '2026-07-15',
+    subtotal: 49.00,
+    tax: 0.00,
+    discount: 0.00,
+    total: 49.00,
+    status: 'UNPAID',
+    items: [
+      { description: 'Iron Warrior Pass Membership Fee', amount: 49.00 }
+    ]
+  }
+];
+
+
 
 /**
  * Active local database engine using localStorage
@@ -670,6 +730,13 @@ class LocalDB {
     this.set('progress', value);
   }
 
+  get invoices(): Invoice[] {
+    return this.get('invoices', DEFAULT_INVOICES);
+  }
+  set invoices(value: Invoice[]) {
+    this.set('invoices', value);
+  }
+
   get logs(): PlatformLog[] {
     return this.get('logs', DEFAULT_PLATFORM_LOGS);
   }
@@ -704,6 +771,7 @@ class LocalDB {
       localStorage.removeItem('workoutPlans');
       localStorage.removeItem('nutritionPlans');
       localStorage.removeItem('progress');
+      localStorage.removeItem('invoices');
       localStorage.removeItem('logs');
     } catch (e) {
       console.error("Local Storage reset failed", e);

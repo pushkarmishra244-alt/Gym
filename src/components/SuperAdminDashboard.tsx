@@ -17,16 +17,18 @@ import {
   Lock,
   ArrowRight
 } from 'lucide-react';
-import { Gym, SubscriptionPlan, PlatformLog, User } from '../types';
+import { Gym, SubscriptionPlan, PlatformLog, User, Invoice } from '../types';
 import { db } from '../data/mockData';
 
 interface SuperAdminDashboardProps {
   gyms: Gym[];
   plans: SubscriptionPlan[];
   logs: PlatformLog[];
+  invoices: Invoice[];
   onGymsUpdate: (gyms: Gym[]) => void;
   onPlansUpdate: (plans: SubscriptionPlan[]) => void;
   onLogsUpdate: (logs: PlatformLog[]) => void;
+  onInvoicesUpdate: (invoices: Invoice[]) => void;
   currentUser: User;
 }
 
@@ -34,9 +36,11 @@ export default function SuperAdminDashboard({
   gyms,
   plans,
   logs,
+  invoices,
   onGymsUpdate,
   onPlansUpdate,
   onLogsUpdate,
+  onInvoicesUpdate,
   currentUser
 }: SuperAdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');

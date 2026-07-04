@@ -13,7 +13,8 @@ import {
   WorkoutPlan, 
   NutritionPlan, 
   MemberProgress, 
-  PlatformLog 
+  PlatformLog,
+  Invoice
 } from './types';
 import DashboardLayout from './components/DashboardLayout';
 import IntegrationGuide from './components/IntegrationGuide';
@@ -37,6 +38,7 @@ export default function App() {
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [progressHistory, setProgressHistory] = useState<MemberProgress[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [logs, setLogs] = useState<PlatformLog[]>([]);
 
   // 2. Active Session States
@@ -65,6 +67,7 @@ export default function App() {
     setWorkoutPlans(db.workoutPlans);
     setNutritionPlans(db.nutritionPlans);
     setProgressHistory(db.progress);
+    setInvoices(db.invoices);
     setLogs(db.logs);
 
     // Initial Path Matching to activePage
@@ -199,6 +202,11 @@ export default function App() {
   const handleProgressHistoryUpdate = (updatedProgressHistory: MemberProgress[]) => {
     setProgressHistory(updatedProgressHistory);
     db.progress = updatedProgressHistory;
+  };
+
+  const handleInvoicesUpdate = (updatedInvoices: Invoice[]) => {
+    setInvoices(updatedInvoices);
+    db.invoices = updatedInvoices;
   };
 
   const handleLogsUpdate = (updatedLogs: PlatformLog[]) => {
@@ -338,9 +346,11 @@ export default function App() {
             gyms={gyms}
             plans={plans}
             logs={logs}
+            invoices={invoices}
             onGymsUpdate={handleGymsUpdate}
             onPlansUpdate={handlePlansUpdate}
             onLogsUpdate={handleLogsUpdate}
+            onInvoicesUpdate={handleInvoicesUpdate}
             currentUser={currentUser}
           />
         )}
@@ -353,10 +363,12 @@ export default function App() {
             trainers={trainers}
             classes={classes}
             gymPlans={membershipPlans}
+            invoices={invoices}
             onMembersUpdate={handleMembersUpdate}
             onTrainersUpdate={handleTrainersUpdate}
             onClassesUpdate={handleClassesUpdate}
             onGymPlansUpdate={handleMembershipPlansUpdate}
+            onInvoicesUpdate={handleInvoicesUpdate}
             onUsersUpdate={handleUsersUpdate}
             onLogsUpdate={handleLogsUpdate}
             currentUser={currentUser}
