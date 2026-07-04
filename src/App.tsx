@@ -45,6 +45,12 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activePage, setActivePage] = useState<'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass'>('member');
 
+  // 3. Sub-tab State synchronization for deep navigation linking
+  const [memberTab, setMemberTab] = useState<'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass'>('dashboard');
+  const [trainerTab, setTrainerTab] = useState<'clients' | 'attendance' | 'trainer_analytics'>('clients');
+  const [gymAdminTab, setGymAdminTab] = useState<'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing'>('members');
+  const [superAdminTab, setSuperAdminTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');
+
   // Load state from localStorage on Mount
   useEffect(() => {
     // Self-healing database check: if users or gyms are empty or corrupt, reset to default seeds
@@ -338,6 +344,14 @@ export default function App() {
         activePage={activePage}
         onPageChange={handlePageChange}
         onUserUpdate={handleUserUpdate}
+        memberTab={memberTab}
+        onMemberTabChange={setMemberTab}
+        trainerTab={trainerTab}
+        onTrainerTabChange={setTrainerTab}
+        gymAdminTab={gymAdminTab}
+        onGymAdminTabChange={setGymAdminTab}
+        superAdminTab={superAdminTab}
+        onSuperAdminTabChange={setSuperAdminTab}
       >
         {activePage === 'guide' && <IntegrationGuide />}
 
@@ -352,6 +366,8 @@ export default function App() {
             onLogsUpdate={handleLogsUpdate}
             onInvoicesUpdate={handleInvoicesUpdate}
             currentUser={currentUser}
+            activeTab={superAdminTab}
+            onTabChange={setSuperAdminTab}
           />
         )}
 
@@ -372,6 +388,8 @@ export default function App() {
             onUsersUpdate={handleUsersUpdate}
             onLogsUpdate={handleLogsUpdate}
             currentUser={currentUser}
+            activeTab={gymAdminTab}
+            onTabChange={setGymAdminTab}
           />
         )}
 
@@ -389,6 +407,8 @@ export default function App() {
             onAttendanceUpdate={handleAttendanceUpdate}
             onLogsUpdate={handleLogsUpdate}
             currentUser={currentUser}
+            activeTab={trainerTab}
+            onTabChange={setTrainerTab}
           />
         )}
 
@@ -408,6 +428,8 @@ export default function App() {
             onAttendanceUpdate={handleAttendanceUpdate}
             onLogsUpdate={handleLogsUpdate}
             currentUser={currentUser}
+            activeTab={memberTab}
+            onTabChange={setMemberTab}
           />
         )}
 

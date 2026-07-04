@@ -24,7 +24,9 @@ import {
   Sparkles,
   Plus,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Dumbbell,
+  Apple
 } from 'lucide-react';
 import { User, Gym } from '../types';
 
@@ -36,6 +38,14 @@ interface DashboardLayoutProps {
   activePage: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass';
   onPageChange: (page: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass') => void;
   onUserUpdate?: (user: User) => void;
+  memberTab?: 'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass';
+  onMemberTabChange?: (tab: 'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass') => void;
+  trainerTab?: 'clients' | 'attendance' | 'trainer_analytics';
+  onTrainerTabChange?: (tab: 'clients' | 'attendance' | 'trainer_analytics') => void;
+  gymAdminTab?: 'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing';
+  onGymAdminTabChange?: (tab: 'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing') => void;
+  superAdminTab?: 'gyms' | 'plans' | 'logs' | 'analytics';
+  onSuperAdminTabChange?: (tab: 'gyms' | 'plans' | 'logs' | 'analytics') => void;
 }
 
 export default function DashboardLayout({
@@ -45,7 +55,15 @@ export default function DashboardLayout({
   onResetDb,
   activePage,
   onPageChange,
-  onUserUpdate
+  onUserUpdate,
+  memberTab,
+  onMemberTabChange,
+  trainerTab,
+  onTrainerTabChange,
+  gymAdminTab,
+  onGymAdminTabChange,
+  superAdminTab,
+  onSuperAdminTabChange
 }: DashboardLayoutProps) {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -53,6 +71,50 @@ export default function DashboardLayout({
   const [editedName, setEditedName] = useState('');
   const [editedEmail, setEditedEmail] = useState('');
   const [editedAvatar, setEditedAvatar] = useState('');
+
+  const getMenuLabel = () => {
+    if (activePage === 'member' || activePage === 'pass') return 'Member Portal';
+    if (activePage === 'trainer') return 'Trainer Hub';
+    if (activePage === 'gym_admin') return 'Gym Admin';
+    if (activePage === 'super_admin') return 'Platform Admin';
+    return 'Menu';
+  };
+
+  const getNavItems = () => {
+    if (activePage === 'member' || activePage === 'pass') {
+      return [
+        { label: 'Book Classes', icon: Calendar, active: activePage === 'member' && memberTab === 'schedule', onClick: () => { onPageChange('member'); onMemberTabChange?.('schedule'); } },
+        { label: 'My Exercises', icon: Dumbbell, active: activePage === 'member' && memberTab === 'workouts', onClick: () => { onPageChange('member'); onMemberTabChange?.('workouts'); } },
+        { label: 'Diet Tracker', icon: Apple, active: activePage === 'member' && memberTab === 'nutrition', onClick: () => { onPageChange('member'); onMemberTabChange?.('nutrition'); } },
+        { label: 'Weight Log', icon: TrendingUp, active: activePage === 'member' && memberTab === 'progress', onClick: () => { onPageChange('member'); onMemberTabChange?.('progress'); } },
+        { label: 'Chat Coach', icon: MessageSquare, active: activePage === 'member' && memberTab === 'messages', onClick: () => { onPageChange('member'); onMemberTabChange?.('messages'); } },
+        { label: 'Membership Pass', icon: CreditCard, active: activePage === 'pass', onClick: () => { onPageChange('pass'); } },
+      ];
+    } else if (activePage === 'trainer') {
+      return [
+        { label: 'Client Roster', icon: Users, active: trainerTab === 'clients', onClick: () => onTrainerTabChange?.('clients') },
+        { label: 'Session Log', icon: UserCheck, active: trainerTab === 'attendance', onClick: () => onTrainerTabChange?.('attendance') },
+        { label: 'Performance', icon: TrendingUp, active: trainerTab === 'trainer_analytics', onClick: () => onTrainerTabChange?.('trainer_analytics') },
+      ];
+    } else if (activePage === 'gym_admin') {
+      return [
+        { label: 'Members', icon: Users, active: gymAdminTab === 'members', onClick: () => onGymAdminTabChange?.('members') },
+        { label: 'Trainers', icon: UserCheck, active: gymAdminTab === 'trainers', onClick: () => onGymAdminTabChange?.('trainers') },
+        { label: 'Classes', icon: Calendar, active: gymAdminTab === 'classes', onClick: () => onGymAdminTabChange?.('classes') },
+        { label: 'Membership Plans', icon: CreditCard, active: gymAdminTab === 'plans', onClick: () => onGymAdminTabChange?.('plans') },
+        { label: 'Billing & Invoices', icon: Briefcase, active: gymAdminTab === 'billing', onClick: () => onGymAdminTabChange?.('billing') },
+        { label: 'Revenue Analytics', icon: TrendingUp, active: gymAdminTab === 'gym_analytics', onClick: () => onGymAdminTabChange?.('gym_analytics') },
+      ];
+    } else if (activePage === 'super_admin') {
+      return [
+        { label: 'Gyms', icon: Briefcase, active: superAdminTab === 'gyms', onClick: () => onSuperAdminTabChange?.('gyms') },
+        { label: 'Subscriptions', icon: CreditCard, active: superAdminTab === 'plans', onClick: () => onSuperAdminTabChange?.('plans') },
+        { label: 'Platform Revenue', icon: TrendingUp, active: superAdminTab === 'analytics', onClick: () => onSuperAdminTabChange?.('analytics') },
+        { label: 'Logs', icon: Shield, active: superAdminTab === 'logs', onClick: () => onSuperAdminTabChange?.('logs') },
+      ];
+    }
+    return [];
+  };
 
   const handleOpenEditProfile = () => {
     setEditedName(currentUser.name);
@@ -150,20 +212,15 @@ export default function DashboardLayout({
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6">
           <div className="space-y-1">
             <span className="px-3 text-[10px] uppercase font-bold tracking-widest text-slate-400 font-mono block mb-2">
-              Menu
+              {getMenuLabel()}
             </span>
-            {[
-              { label: 'Member Portal (/)', icon: LayoutDashboard, page: 'member' as const, color: 'text-indigo-600' },
-              { label: 'Trainer Dashboard (/trainer)', icon: UserCheck, page: 'trainer' as const, color: 'text-emerald-500' },
-              { label: 'Gym Owner Admin (/admin)', icon: Briefcase, page: 'gym_admin' as const, color: 'text-indigo-600' },
-              { label: 'Pro Platform Admin (/proadmin)', icon: Shield, page: 'super_admin' as const, color: 'text-rose-500' },
-            ].map((item) => {
+            {getNavItems().map((item, idx) => {
               const Icon = item.icon;
-              const isActive = activePage === item.page;
+              const isActive = item.active;
               return (
                 <button
-                  key={item.page}
-                  onClick={() => onPageChange(item.page)}
+                  key={idx}
+                  onClick={item.onClick}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-slate-50 text-indigo-600 font-bold border border-slate-100 shadow-xs'
@@ -178,47 +235,6 @@ export default function DashboardLayout({
                 </button>
               );
             })}
-          </div>
-
-          {/* Classes Filters / Extras */}
-          <div className="space-y-1">
-            <span className="px-3 text-[10px] uppercase font-bold tracking-widest text-slate-400 font-mono block mb-2">
-              Classes
-            </span>
-            {[
-              { label: 'CrossFit', color: 'bg-emerald-400' },
-              { label: 'HIIT', color: 'bg-orange-400' },
-              { label: 'Yoga', color: 'bg-amber-400' },
-            ].map((cl) => (
-              <button
-                key={cl.label}
-                onClick={() => {
-                  onPageChange('member');
-                  alert(`${cl.label} training category selected. Dynamic schedule timeline sorted.`);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-50/45 text-left cursor-pointer"
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${cl.color}`}></span>
-                <span>{cl.label}</span>
-              </button>
-            ))}
-
-            <div className="pt-2">
-              <button
-                onClick={() => onPageChange('pass')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  activePage === 'pass'
-                    ? 'bg-amber-50 text-amber-800 border border-amber-100 shadow-2xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/50'
-                }`}
-              >
-                <CreditCard className={`w-4 h-4 shrink-0 ${activePage === 'pass' ? 'text-amber-500' : 'text-slate-400'}`} />
-                <span>Membership Pass</span>
-                {activePage === 'pass' && (
-                  <span className="ml-auto bg-amber-500 text-[8px] font-bold text-white px-1.5 py-0.5 rounded uppercase">Gold</span>
-                )}
-              </button>
-            </div>
           </div>
         </div>
 
@@ -274,8 +290,50 @@ export default function DashboardLayout({
         <div className="flex-1 flex flex-col xl:flex-row">
           
           {/* CENTER PANEL CONTENT */}
-          <main className="flex-1 p-6 md:p-8 min-w-0">
-            {children}
+          <main className="flex-1 p-6 md:p-8 min-w-0 flex flex-col justify-between">
+            <div className="flex-1">
+              {children}
+            </div>
+
+            {/* Minimalist Role-Switching Footer */}
+            <footer className="mt-12 pt-6 border-t border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-mono tracking-wider uppercase shrink-0">
+              <div className="font-semibold text-slate-400/80">
+                © 2026 GYMFLOW WORKSPACE
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                <button 
+                  type="button"
+                  onClick={() => onPageChange('member')}
+                  className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'member' || activePage === 'pass' ? 'text-indigo-500 font-bold' : ''}`}
+                >
+                  Member Portal
+                </button>
+                <span className="text-slate-200 shrink-0">•</span>
+                <button 
+                  type="button"
+                  onClick={() => onPageChange('trainer')}
+                  className={`hover:text-emerald-600 transition-colors cursor-pointer ${activePage === 'trainer' ? 'text-emerald-500 font-bold' : ''}`}
+                >
+                  Trainer Hub
+                </button>
+                <span className="text-slate-200 shrink-0">•</span>
+                <button 
+                  type="button"
+                  onClick={() => onPageChange('gym_admin')}
+                  className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'gym_admin' ? 'text-indigo-600 font-bold' : ''}`}
+                >
+                  Gym Owner Admin
+                </button>
+                <span className="text-slate-200 shrink-0">•</span>
+                <button 
+                  type="button"
+                  onClick={() => onPageChange('super_admin')}
+                  className={`hover:text-rose-600 transition-colors cursor-pointer ${activePage === 'super_admin' ? 'text-rose-500 font-bold' : ''}`}
+                >
+                  Pro Platform Admin
+                </button>
+              </div>
+            </footer>
           </main>
 
           {/* 4. PERSISTENT RIGHT SIDEBAR (Only visible on XL screens for Member/Pass views) */}
@@ -477,21 +535,16 @@ export default function DashboardLayout({
                 <nav className="p-5 space-y-6 flex-1 overflow-y-auto bg-white">
                   <div className="space-y-1">
                     <span className="px-3 text-[9px] uppercase font-bold tracking-widest text-slate-400 font-mono block mb-2">
-                      Menu
+                      {getMenuLabel()}
                     </span>
-                    {[
-                      { label: 'Member Portal (/)', icon: LayoutDashboard, page: 'member' as const },
-                      { label: 'Trainer Dashboard (/trainer)', icon: UserCheck, page: 'trainer' as const },
-                      { label: 'Gym Owner Admin (/admin)', icon: Briefcase, page: 'gym_admin' as const },
-                      { label: 'Pro Platform Admin (/proadmin)', icon: Shield, page: 'super_admin' as const },
-                    ].map((item) => {
+                    {getNavItems().map((item, idx) => {
                       const Icon = item.icon;
-                      const isActive = activePage === item.page;
+                      const isActive = item.active;
                       return (
                         <button
-                          key={item.page}
+                          key={idx}
                           onClick={() => {
-                            onPageChange(item.page);
+                            item.onClick();
                             setIsSidebarOpen(false);
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer ${
@@ -505,47 +558,6 @@ export default function DashboardLayout({
                         </button>
                       );
                     })}
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="px-3 text-[9px] uppercase font-bold tracking-widest text-slate-400 font-mono block mb-2">
-                      Classes
-                    </span>
-                    {[
-                      { label: 'CrossFit', color: 'bg-emerald-400' },
-                      { label: 'HIIT', color: 'bg-orange-400' },
-                      { label: 'Yoga', color: 'bg-amber-400' },
-                    ].map((cl) => (
-                      <button
-                        key={cl.label}
-                        onClick={() => {
-                          onPageChange('member');
-                          setIsSidebarOpen(false);
-                          alert(`${cl.label} category enabled!`);
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50/50 text-left cursor-pointer"
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${cl.color}`}></span>
-                        <span>{cl.label}</span>
-                      </button>
-                    ))}
-
-                    <div className="pt-3">
-                      <button
-                        onClick={() => {
-                          onPageChange('pass');
-                          setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer ${
-                          activePage === 'pass'
-                            ? 'bg-amber-50 text-amber-800 font-bold border border-amber-100'
-                            : 'text-slate-600'
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span>Membership Pass</span>
-                      </button>
-                    </div>
                   </div>
                 </nav>
 

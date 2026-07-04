@@ -43,6 +43,8 @@ interface TrainerDashboardProps {
   onAttendanceUpdate: (attendance: Attendance[]) => void;
   onLogsUpdate: (logs: any) => void;
   currentUser: any;
+  activeTab?: 'clients' | 'attendance' | 'trainer_analytics';
+  onTabChange?: (tab: 'clients' | 'attendance' | 'trainer_analytics') => void;
 }
 
 export default function TrainerDashboard({
@@ -57,9 +59,13 @@ export default function TrainerDashboard({
   onNutritionPlansUpdate,
   onAttendanceUpdate,
   onLogsUpdate,
-  currentUser
+  currentUser,
+  activeTab: controlledActiveTab,
+  onTabChange
 }: TrainerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'clients' | 'attendance' | 'trainer_analytics'>('clients');
+  const [localActiveTab, setLocalActiveTab] = useState<'clients' | 'attendance' | 'trainer_analytics'>('clients');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
 
   // Client Selection for plan edits
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -84,6 +90,12 @@ export default function TrainerDashboard({
   // 1. Calculations & Filters
   const myClients = clients.filter(m => m.trainerId === trainer.id);
   const myClasses = classes.filter(c => c.trainerId === trainer.id);
+
+  // 1RM performance calculator states
+  const [calcClient, setCalcClient] = useState(myClients[0]?.id || '');
+  const [calcWeight, setCalcWeight] = useState(80);
+  const [calcReps, setCalcReps] = useState(5);
+  const [calcEx, setCalcEx] = useState('Back Squat');
 
   // Load existing plans when a client is selected
   const handleSelectClient = (clientId: string) => {
@@ -731,11 +743,6 @@ export default function TrainerDashboard({
             <p className="text-xs text-slate-400 mb-6 font-medium">Select a client and estimate their 1-Rep Max (Epley Formula) to program their targeted strength percentage splits.</p>
             
             {(() => {
-              const [calcClient, setCalcClient] = React.useState(myClients[0]?.id || '');
-              const [calcWeight, setCalcWeight] = React.useState(80);
-              const [calcReps, setCalcReps] = React.useState(5);
-              const [calcEx, setCalcEx] = React.useState('Back Squat');
-
               const selectedClientObj = myClients.find(c => c.id === calcClient);
               const calculated1RM = Math.round(calcWeight * (1 + calcReps / 30));
 

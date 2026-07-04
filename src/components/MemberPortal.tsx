@@ -55,6 +55,8 @@ interface MemberPortalProps {
   onAttendanceUpdate: (attendance: Attendance[]) => void;
   onLogsUpdate: (logs: any) => void;
   currentUser: any;
+  activeTab?: 'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass';
+  onTabChange?: (tab: 'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass') => void;
 }
 
 export default function MemberPortal({
@@ -71,9 +73,13 @@ export default function MemberPortal({
   onProgressUpdate,
   onAttendanceUpdate,
   onLogsUpdate,
-  currentUser
+  currentUser,
+  activeTab: controlledActiveTab,
+  onTabChange
 }: MemberPortalProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass'>('dashboard');
+  const [localActiveTab, setLocalActiveTab] = useState<'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass'>('dashboard');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
 
   // Interactive Modal edit states (for custom scheduler dialog shown in the video)
   const [isModalOpen, setIsModalOpen] = useState(false);

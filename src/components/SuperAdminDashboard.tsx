@@ -30,6 +30,8 @@ interface SuperAdminDashboardProps {
   onLogsUpdate: (logs: PlatformLog[]) => void;
   onInvoicesUpdate: (invoices: Invoice[]) => void;
   currentUser: User;
+  activeTab?: 'gyms' | 'plans' | 'logs' | 'analytics';
+  onTabChange?: (tab: 'gyms' | 'plans' | 'logs' | 'analytics') => void;
 }
 
 export default function SuperAdminDashboard({
@@ -41,9 +43,13 @@ export default function SuperAdminDashboard({
   onPlansUpdate,
   onLogsUpdate,
   onInvoicesUpdate,
-  currentUser
+  currentUser,
+  activeTab: controlledActiveTab,
+  onTabChange
 }: SuperAdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');
+  const [localActiveTab, setLocalActiveTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
 
   // SaaS Features Toggle States
   const [featureFlags, setFeatureFlags] = useState({

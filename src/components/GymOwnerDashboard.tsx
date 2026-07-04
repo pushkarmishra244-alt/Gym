@@ -49,6 +49,8 @@ interface GymOwnerDashboardProps {
   onUsersUpdate: (users: User[]) => void;
   onLogsUpdate: (logs: any) => void;
   currentUser: User;
+  activeTab?: 'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing';
+  onTabChange?: (tab: 'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing') => void;
 }
 
 export default function GymOwnerDashboard({
@@ -66,9 +68,13 @@ export default function GymOwnerDashboard({
   onInvoicesUpdate,
   onUsersUpdate,
   onLogsUpdate,
-  currentUser
+  currentUser,
+  activeTab: controlledActiveTab,
+  onTabChange
 }: GymOwnerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing'>('members');
+  const [localActiveTab, setLocalActiveTab] = useState<'members' | 'trainers' | 'classes' | 'plans' | 'gym_analytics' | 'billing'>('members');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = onTabChange !== undefined ? onTabChange : setLocalActiveTab;
 
   // Upgraded Member Directory Filters
   const [filterPlan, setFilterPlan] = useState<string>('all');
