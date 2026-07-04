@@ -32,6 +32,7 @@ interface SuperAdminDashboardProps {
   currentUser: User;
   activeTab?: 'gyms' | 'plans' | 'logs' | 'analytics';
   onTabChange?: (tab: 'gyms' | 'plans' | 'logs' | 'analytics') => void;
+  onViewAsGymOwner?: (gym: Gym) => void;
 }
 
 export default function SuperAdminDashboard({
@@ -45,7 +46,8 @@ export default function SuperAdminDashboard({
   onInvoicesUpdate,
   currentUser,
   activeTab: controlledActiveTab,
-  onTabChange
+  onTabChange,
+  onViewAsGymOwner
 }: SuperAdminDashboardProps) {
   const [localActiveTab, setLocalActiveTab] = useState<'gyms' | 'plans' | 'logs' | 'analytics'>('gyms');
   const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
@@ -481,12 +483,23 @@ export default function SuperAdminDashboard({
                               </button>
                             )}
                             {gym.status === 'ACTIVE' && (
-                              <button
-                                onClick={() => handleSuspendGym(gym.id)}
-                                className="px-2.5 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1 cursor-pointer"
-                              >
-                                <X className="w-3.5 h-3.5" /> Suspend
-                              </button>
+                              <>
+                                {onViewAsGymOwner && (
+                                  <button
+                                    onClick={() => onViewAsGymOwner(gym)}
+                                    className="px-2.5 py-1 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-1 cursor-pointer"
+                                    title="View as Gym Owner"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> View HQ
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleSuspendGym(gym.id)}
+                                  className="px-2.5 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                  <X className="w-3.5 h-3.5" /> Suspend
+                                </button>
+                              </>
                             )}
                             {gym.status === 'SUSPENDED' && (
                               <button

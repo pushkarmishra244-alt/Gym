@@ -310,7 +310,7 @@ export default function TrainerDashboard({
       </div>
 
       {/* Trainer Stats Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Assigned Members</span>
@@ -341,6 +341,51 @@ export default function TrainerDashboard({
           </div>
           <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
             <Award className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Estimated Earnings</span>
+              <div className="text-2xl font-bold font-display text-emerald-600">
+                ${(myClasses.length * 45 * 4 + myClients.length * 25).toLocaleString()}
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider leading-none mt-0.5">
+                32 hrs billed • {myClients.length} clients
+              </p>
+            </div>
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg shrink-0">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Handbuilt SVG Weekly payout bar series */}
+          <div className="mt-3 pt-2.5 border-t border-slate-50">
+            <div className="flex items-end justify-between h-9 gap-2 px-1">
+              {[
+                { label: 'W1', amt: 500 },
+                { label: 'W2', amt: 620 },
+                { label: 'W3', amt: 480 },
+                { label: 'W4', amt: 750 }
+              ].map((w, idx) => {
+                const maxAmt = 800;
+                const pct = (w.amt / maxAmt) * 100;
+                return (
+                  <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                    {/* Tiny tooltip */}
+                    <div className="absolute bottom-full mb-1 hidden group-hover:block bg-slate-900 text-white text-[8px] px-1 py-0.5 rounded font-mono font-bold z-15 whitespace-nowrap">
+                      ${w.amt}
+                    </div>
+                    <div 
+                      style={{ height: `${pct}%` }} 
+                      className="w-full bg-emerald-500/20 group-hover:bg-emerald-500/35 rounded-xs transition-all h-full min-h-[4px] cursor-pointer"
+                    ></div>
+                    <span className="text-[8px] text-slate-400 font-mono font-bold mt-1 leading-none">{w.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -23,6 +23,7 @@ import GymOwnerDashboard from './components/GymOwnerDashboard';
 import TrainerDashboard from './components/TrainerDashboard';
 import MemberPortal from './components/MemberPortal';
 import MembershipPassPage from './components/MembershipPassPage';
+import CosmeticLoginScreen from './components/CosmeticLoginScreen';
 
 export default function App() {
   // 1. Core database state hooks loaded from persistent localStorage DB
@@ -44,6 +45,7 @@ export default function App() {
   // 2. Active Session States
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activePage, setActivePage] = useState<'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass'>('member');
+  const [enteredPanels, setEnteredPanels] = useState<Record<string, boolean>>({});
 
   // 3. Sub-tab State synchronization for deep navigation linking
   const [memberTab, setMemberTab] = useState<'dashboard' | 'schedule' | 'workouts' | 'nutrition' | 'progress' | 'messages' | 'pass'>('dashboard');
@@ -277,11 +279,68 @@ export default function App() {
     }
   };
 
+  const handleLoginSuccess = (page: 'member' | 'trainer' | 'gym_admin' | 'super_admin' | 'guide' | 'pass') => {
+    const key = (page === 'pass') ? 'member' : page;
+    setEnteredPanels(prev => ({ ...prev, [key]: true }));
+  };
+
+  const handleViewAsGymOwner = (gym: Gym) => {
+    // 1. Find a gym admin user
+    let gymAdminUser = users.find(u => u.role === 'GYM_ADMIN' && u.gymId === gym.id);
+    if (!gymAdminUser) {
+      // If none exists, find any gym admin or fallback, and set its gymId to gym.id
+      const anyGymAdmin = users.find(u => u.role === 'GYM_ADMIN');
+      if (anyGymAdmin) {
+        gymAdminUser = { ...anyGymAdmin, gymId: gym.id, name: `${gym.name} Owner` };
+        handleUsersUpdate(users.map(u => u.id === anyGymAdmin.id ? gymAdminUser! : u));
+      } else {
+        // Fallback user
+        gymAdminUser = {
+          id: `user_gym_admin_${gym.id}`,
+          name: `${gym.name} Owner`,
+          email: `owner@${gym.id.toLowerCase().replace(/\s+/g, '')}.com`,
+          role: 'GYM_ADMIN',
+          gymId: gym.id,
+          createdAt: '2026-01-15'
+        };
+        handleUsersUpdate([...users, gymAdminUser]);
+      }
+    }
+    
+    // 2. Set enteredPanels['gym_admin'] to true so they skip the login screen when transitioning
+    setEnteredPanels(prev => ({ ...prev, gym_admin: true }));
+    
+    // 3. Set current user
+    setCurrentUser(gymAdminUser);
+    
+    // 4. Change page to gym_admin
+    setActivePage('gym_admin');
+    
+    // 5. Update browser history path
+    if (window.location.pathname !== '/admin') {
+      window.history.pushState(null, '', '/admin');
+    }
+  };
+
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
+    );
+  }
+
+  // Determine if login is gated for the current activePage
+  const loginKey = (activePage === 'pass') ? 'member' : activePage;
+  const isGated = activePage !== 'guide' && !enteredPanels[loginKey];
+
+  if (isGated) {
+    return (
+      <CosmeticLoginScreen
+        activePage={activePage}
+        onPageChange={handlePageChange}
+        onLoginSuccess={handleLoginSuccess}
+      />
     );
   }
 
@@ -368,6 +427,7 @@ export default function App() {
             currentUser={currentUser}
             activeTab={superAdminTab}
             onTabChange={setSuperAdminTab}
+            onViewAsGymOwner={handleViewAsGymOwner}
           />
         )}
 

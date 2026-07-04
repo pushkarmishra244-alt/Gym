@@ -238,6 +238,39 @@ export default function DashboardLayout({
           </div>
         </div>
 
+        {/* Compact Main Sidebar Profile Section (All Roles) */}
+        <div className="px-4 py-3 border-t border-slate-50 shrink-0">
+          <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-100/50 transition-all group">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img 
+                src={currentUser?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'Guest'}`}
+                alt="Profile" 
+                className="w-8 h-8 rounded-full border border-white shadow-3xs object-cover bg-white shrink-0"
+                referrerPolicy="no-referrer"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-black text-slate-800 truncate leading-tight">{currentUser?.name || 'Guest'}</p>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate leading-none">
+                  {currentUser?.role === 'SUPER_ADMIN' 
+                    ? 'Pro Owner' 
+                    : currentUser?.role === 'GYM_ADMIN' 
+                      ? 'Gym Owner' 
+                      : currentUser?.role === 'TRAINER' 
+                        ? 'Trainer Coach' 
+                        : 'Member'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleOpenEditProfile}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white border border-transparent hover:border-slate-100 shadow-3xs cursor-pointer transition-all shrink-0"
+              title="Edit Profile"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-50 shrink-0 space-y-2">
           <button
@@ -295,43 +328,82 @@ export default function DashboardLayout({
               {children}
             </div>
 
-            {/* Minimalist Role-Switching Footer */}
-            <footer className="mt-12 pt-6 border-t border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-mono tracking-wider uppercase shrink-0">
-              <div className="font-semibold text-slate-400/80">
-                © 2026 GYMFLOW WORKSPACE
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                <button 
-                  type="button"
-                  onClick={() => onPageChange('member')}
-                  className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'member' || activePage === 'pass' ? 'text-indigo-500 font-bold' : ''}`}
-                >
-                  Member Portal
-                </button>
-                <span className="text-slate-200 shrink-0">•</span>
-                <button 
-                  type="button"
-                  onClick={() => onPageChange('trainer')}
-                  className={`hover:text-emerald-600 transition-colors cursor-pointer ${activePage === 'trainer' ? 'text-emerald-500 font-bold' : ''}`}
-                >
-                  Trainer Hub
-                </button>
-                <span className="text-slate-200 shrink-0">•</span>
-                <button 
-                  type="button"
-                  onClick={() => onPageChange('gym_admin')}
-                  className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'gym_admin' ? 'text-indigo-600 font-bold' : ''}`}
-                >
-                  Gym Owner Admin
-                </button>
-                <span className="text-slate-200 shrink-0">•</span>
-                <button 
-                  type="button"
-                  onClick={() => onPageChange('super_admin')}
-                  className={`hover:text-rose-600 transition-colors cursor-pointer ${activePage === 'super_admin' ? 'text-rose-500 font-bold' : ''}`}
-                >
-                  Pro Platform Admin
-                </button>
+            {/* Expanded Showcase & Role-Switching Footer */}
+            <footer className="mt-12 pt-8 border-t border-slate-100/80 text-[10px] text-slate-400 font-mono tracking-wider uppercase shrink-0 space-y-6">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                
+                {/* Left Panel: Copyright, Tagline & Disclaimer */}
+                <div className="text-center lg:text-left space-y-1.5 max-w-md">
+                  <div className="font-black text-slate-600 tracking-tight flex items-center justify-center lg:justify-start gap-1">
+                    <Flame className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
+                    <span>© 2026 GYMFLOW WORKSPACE</span>
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-normal leading-normal">
+                    GYMFLOW — FULL-STACK GYM & FITNESS SAAS DEMO
+                  </p>
+                  <p className="text-[8px] text-slate-400/70 font-normal normal-case leading-normal">
+                    All data shown is simulated mock data for demonstration purposes. Personal details, weights, or schedules do not correspond to real individuals.
+                  </p>
+                </div>
+
+                {/* Middle Panel: Showcase Badge & Icons */}
+                <div className="flex flex-col items-center gap-2.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200/50 text-[9px] font-bold">
+                    <span>SHOWCASE / PORTFOLIO PROJECT</span>
+                  </div>
+                  {/* Social Icons (GitHub, LinkedIn, Email) */}
+                  <div className="flex items-center gap-3">
+                    <a href="https://github.com" target="_blank" rel="noreferrer" className="p-1 text-slate-400 hover:text-slate-600 transition-colors" title="GitHub">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" />
+                      </svg>
+                    </a>
+                    <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="p-1 text-slate-400 hover:text-slate-600 transition-colors" title="LinkedIn">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                      </svg>
+                    </a>
+                    <a href="mailto:demo@gymflow.com" className="p-1 text-slate-400 hover:text-slate-600 transition-colors" title="Email Support">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Right Panel: Active Page Swappers */}
+                <div className="flex flex-wrap items-center justify-center lg:justify-end gap-x-4 gap-y-2">
+                  <button 
+                    type="button"
+                    onClick={() => onPageChange('member')}
+                    className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'member' || activePage === 'pass' ? 'text-indigo-500 font-bold' : ''}`}
+                  >
+                    Member Portal
+                  </button>
+                  <span className="text-slate-200 shrink-0">•</span>
+                  <button 
+                    type="button"
+                    onClick={() => onPageChange('trainer')}
+                    className={`hover:text-emerald-600 transition-colors cursor-pointer ${activePage === 'trainer' ? 'text-emerald-500 font-bold' : ''}`}
+                  >
+                    Trainer Hub
+                  </button>
+                  <span className="text-slate-200 shrink-0">•</span>
+                  <button 
+                    type="button"
+                    onClick={() => onPageChange('gym_admin')}
+                    className={`hover:text-indigo-600 transition-colors cursor-pointer ${activePage === 'gym_admin' ? 'text-indigo-600 font-bold' : ''}`}
+                  >
+                    Gym Owner Admin
+                  </button>
+                  <span className="text-slate-200 shrink-0">•</span>
+                  <button 
+                    type="button"
+                    onClick={() => onPageChange('super_admin')}
+                    className={`hover:text-rose-600 transition-colors cursor-pointer ${activePage === 'super_admin' ? 'text-rose-500 font-bold' : ''}`}
+                  >
+                    Pro Platform Admin
+                  </button>
+                </div>
+
               </div>
             </footer>
           </main>
